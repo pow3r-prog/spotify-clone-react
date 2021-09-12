@@ -1,7 +1,43 @@
 import React from 'react'
+import { useState, useEffect } from 'react'
+import { Container, Form } from 'react-bootstrap'
 import useAuth from './useAuth'
+import SpotifyWebApi from 'spotify-web-api-node'
+
+const spotifyApi = new SpotifyWebApi({
+  clientId: 'b1e1cf3fcef74728b255418cf22ce2b1',
+})
 
 export default function Dashboard({ code }) {
   const accessToken = useAuth(code)
-  return <div>{code}</div>
+  const [search, setSearch] = useState('')
+  const [searchResults, setSearchResults] = useState([])
+
+  useEffect(() => {
+    if (!accessToken) return
+    spotifyApi.setAccessToken(accessToken)
+  }, [accessToken])
+
+  useEffect(() => {
+    if (!search) return setSearchResults([])
+    if (!accessToken) return
+
+    spotifyApi.searchTracks(search).then((res) => {
+      console.log(res)
+    })
+  }, [search, accessToken])
+  return (
+    <Container className='d-flex flex-column py-2' style={{ height: '100vh' }}>
+      <Form.Control
+        type='search'
+        placeholder='Search Songs/Artists'
+        value={search}
+        onChange='e => setSearch(e.target.value)'
+      />
+      <div className='flex-grow-1 my-2' style={{ overflowY: 'auto' }}>
+        Songs
+      </div>
+      <div>Bottom</div>
+    </Container>
+  )
 }
